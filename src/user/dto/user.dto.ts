@@ -4,5 +4,6 @@ export class UserDto {
   email: string;
   firstName: string;
   lastName: string;
-  slug: string;
+  created_at: Date;
+  updated_at: Date;
 }

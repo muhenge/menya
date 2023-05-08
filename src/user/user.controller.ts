@@ -12,22 +12,39 @@ export class UserController {
     @Body('new') createUser: CreateUserDto,
   ): Promise<{ user: UserDto }> {
     const { user } = await this.userService.create(createUser);
-    const { id, username, email, firstName, lastName, slug } = user;
-    const userDto = { id, username, email, firstName, lastName, slug };
+    const { id, username, email, firstName, lastName, created_at, updated_at } = user;
+    const userDto = {
+      id,
+      username,
+      email,
+      firstName,
+      lastName,
+      created_at,
+      updated_at,
+    };
     return { user: userDto };
   }
 
-  @Get('users')
+  @Get('all')
   async getUsers(): Promise<{ data: number, users: UserDto[] }> {
     const users = await this.userService.getUsers();
     const userDtos = users.map(
-      ({ id, username, email, firstName, lastName }) => ({
+      ({
         id,
         username,
         email,
         firstName,
         lastName,
-        slug: username,
+        created_at,
+        updated_at,
+      }) => ({
+        id,
+        username,
+        email,
+        firstName,
+        lastName,
+        created_at,
+        updated_at,
       }),
     );
     return { data: userDtos.length, users: userDtos };
