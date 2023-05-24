@@ -11,7 +11,7 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUser: CreateUserDto): Promise<{ user: User }> {
+  async registerUser(createUser: CreateUserDto): Promise<{ user: User }> {
     const user = this.usersRepository.create(createUser);
     const createdUser = await this.usersRepository.save(user);
     return { user: createdUser };
@@ -19,5 +19,15 @@ export class UserService {
 
   async getUsers(): Promise<User[]> {
     return await this.usersRepository.find();
+  }
+
+  async getUserByEmail(email): Promise<User | null> {
+    const user = await this.usersRepository.findOneBy({ email });
+    return user || null;
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    const user = await this.usersRepository.findOneBy({ id });
+    return user || null;
   }
 }

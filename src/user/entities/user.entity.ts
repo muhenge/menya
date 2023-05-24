@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import * as bcrypt from 'bcrypt';
-import { IsUUID } from '../../../node_modules/class-validator/esm2015/decorator/string/IsUUID';
 
 @Entity()
 export class User {
@@ -41,14 +40,16 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   emailToLowerCase() {
-    this.email = this.email.toLowerCase();
+    if (this.email) {
+      this.email = this.email.toLowerCase();
+    }
   }
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
     try {
-      const salt = await bcrypt.genSaltSync(10);
-      this.password = bcrypt.hashSync(this.password, salt);
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
     } catch (error) {
       console.log(error);
     }
@@ -59,7 +60,7 @@ export class User {
   }
   slugify(text: string) {
     return text
-      .toString()
+      ?.toString()
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w\-]+/g, '')
