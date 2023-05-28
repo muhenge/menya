@@ -4,6 +4,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserDto } from '../user/dto/user.dto';
 import { UseGuards } from '@nestjs/common';
 import { signinDto } from 'src/user/dto/signIn-user.dto';
+import { UserService } from '../user/user.service';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

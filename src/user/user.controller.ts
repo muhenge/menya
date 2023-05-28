@@ -1,7 +1,15 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 
 @Controller('users/')
 export class UserController {
@@ -36,6 +44,7 @@ export class UserController {
         email,
         firstName,
         lastName,
+        slug,
         created_at,
         updated_at,
       }) => ({
@@ -44,10 +53,27 @@ export class UserController {
         email,
         firstName,
         lastName,
+        slug,
         created_at,
         updated_at,
       }),
     );
     return { data: userDtos.length, users: userDtos };
+  }
+
+  @Get(':slug')
+  async getUserBySlug(@Param('slug') slug: string): Promise<{ user: User }> {
+    const user = await this.userService.getUserBySlug(slug);
+    console.log(user);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return { user: user };
+  }
+
+  @Get('email')
+  async getUserByEmail(email: string): Promise<User> {
+    const user = await this.getUserByEmail(email);
+    return user;
   }
 }

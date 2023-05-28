@@ -22,12 +22,19 @@ export class UserService {
   }
 
   async getUserByEmail(email): Promise<User | null> {
-    const user = await this.usersRepository.findOneBy({ email });
+    const user = await this.usersRepository.findOne({
+      where: { email: email },
+    });
     return user || null;
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOne({ where: { id: id } });
+    return user || null;
+  }
+
+  async getUserBySlug(slug: string): Promise<User | null> {
+    const user = await this.usersRepository.findOne({ where: { slug: slug } });
     return user || null;
   }
 }

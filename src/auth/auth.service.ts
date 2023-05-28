@@ -30,11 +30,20 @@ export class AuthService {
     return { user: createdUser };
   }
 
+  async comparePasswords(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await compare(password, hashedPassword);
+  }
+
   async login(email: string, password: string): Promise<string> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) return null;
-
-    const isMatch = await compare(password, user.password);
+    console.log('Input Password:', password);
+    console.log('Stored Password:', user.password);
+    const isMatch = await this.comparePasswords(password, user.password);
+    console.log('Is Match:', isMatch);
     if (!isMatch) return null;
 
     const payload: JwtPayload = {

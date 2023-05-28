@@ -2,20 +2,19 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  Generated,
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
-import * as bcrypt from 'bcrypt';
+import { genSalt, hash } from 'bcrypt';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Generated()
+  @Column({ default: '' })
   slug: string;
   @Column({ nullable: true })
   @IsOptional()
@@ -47,14 +46,13 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
-    try {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-    } catch (error) {
-      console.log(error);
+    if (this.password) {
+      const salt = await genSalt(10);
+      this.password = await hash(this.password, salt);
     }
   }
   @BeforeInsert()
+  @BeforeUpdate()
   generateSlug() {
     this.slug = this.slugify(this.username);
   }
