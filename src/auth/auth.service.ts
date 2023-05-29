@@ -38,12 +38,13 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<string> {
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.UserRepository.findOne({
+      where: { email: email },
+      select: ['id', 'email', 'username', 'password'],
+    });
+    
     if (!user) return null;
-    console.log('Input Password:', password);
-    console.log('Stored Password:', user.password);
     const isMatch = await this.comparePasswords(password, user.password);
-    console.log('Is Match:', isMatch);
     if (!isMatch) return null;
 
     const payload: JwtPayload = {
