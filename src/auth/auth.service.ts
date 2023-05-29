@@ -42,7 +42,7 @@ export class AuthService {
       where: { email: email },
       select: ['id', 'email', 'username', 'password'],
     });
-    
+
     if (!user) return null;
     const isMatch = await this.comparePasswords(password, user.password);
     if (!isMatch) return null;
