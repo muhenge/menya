@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -25,6 +29,12 @@ export class AuthService {
   }
 
   async register(createUser: CreateUserDto): Promise<{ user: User }> {
+    const existingUser = await this.userService.getUserByEmail(
+      createUser.email,
+    );
+    if (existingUser) {
+      throw new Error('User already exists');
+    }
     const user = this.UserRepository.create(createUser);
     const createdUser = await this.UserRepository.save(user);
     return { user: createdUser };
@@ -43,9 +53,9 @@ export class AuthService {
       select: ['id', 'email', 'username', 'password'],
     });
 
-    if (!user) return null;
+    if (!user) throw new NotFoundException('User not found');
     const isMatch = await this.comparePasswords(password, user.password);
-    if (!isMatch) return null;
+    if (!isMatch) throw new UnauthorizedException('Invalid password');
 
     const payload: JwtPayload = {
       id: user.id,
