@@ -23,7 +23,7 @@ export class AuthService {
 
   async validateUser(payload: JwtPayload): Promise<User> {
     const user = await this.userService.getUserById(payload.id);
-    if (!user) return null;
+    if (!user) throw new Error(`User ${payload.email} not found`);
 
     return user;
   }
