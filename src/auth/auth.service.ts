@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -33,7 +34,7 @@ export class AuthService {
       createUser.email,
     );
     if (existingUser) {
-      throw new Error('User already exists');
+      throw new ForbiddenException('User already exists');
     }
     const user = this.UserRepository.create(createUser);
     const createdUser = await this.UserRepository.save(user);
@@ -47,6 +48,10 @@ export class AuthService {
     return await compare(password, hashedPassword);
   }
 
+  async getUserByEmail(user): Promise<User> {
+    return await this.userService.getUserById(user.email);
+  }
+
   async login(email: string, password: string): Promise<string> {
     const user = await this.UserRepository.findOne({
       where: { email: email },
@@ -55,7 +60,7 @@ export class AuthService {
 
     if (!user) throw new NotFoundException('User not found');
     const isMatch = await this.comparePasswords(password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Invalid password');
+    if (!isMatch) throw new UnauthorizedException('Wrong password');
 
     const payload: JwtPayload = {
       id: user.id,
@@ -63,6 +68,6 @@ export class AuthService {
       username: user.username,
       sub: user.id,
     };
-    return this.jwtService.sign(payload);
+    return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
 }

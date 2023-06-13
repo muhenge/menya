@@ -6,10 +6,11 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { genSalt, hash } from 'bcrypt';
-
+import { Posts } from '../../posts/entities/posts.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -66,4 +67,11 @@ export class User {
       .replace(/^-+/, '')
       .replace(/-+$/, '');
   }
+  @OneToMany(() => Posts, (post) => post.author, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: true,
+  })
+  posts: Posts[];
 }
