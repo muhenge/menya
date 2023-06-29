@@ -78,9 +78,7 @@ export class AuthController {
     @UploadedFile() file: Express.Multer.File,
     @GetAuthUser() user: User,
   ) {
-    console.log(file)
     const response = await this.authService.addPictureToUser(user, file);
-    console.log(response);
-    console.log(user);
+    return { response };
   }
 }
