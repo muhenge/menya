@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -12,7 +13,9 @@ import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { User } from '../user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-
+import { UpdateUserDto } from '../user/dto/updateUser.dto';
+import { FileUploaderService } from '../uploads/upload.service';
+import { GetAuthUser } from './decorators';
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,6 +23,7 @@ export class AuthService {
     private UserRepository: Repository<User>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly fileUploadService: FileUploaderService,
   ) {}
 
   async validateUser(payload: JwtPayload): Promise<User> {
@@ -70,4 +74,35 @@ export class AuthService {
     };
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
+
+  async addPictureToUser(user: User, file: Express.Multer.File): Promise<void> {
+    const uploadedFile = await this.fileUploadService.uploadFile(file);
+    user.avatar = uploadedFile;
+    await this.UserRepository.save(user);
+  }
+
+  // async uploadProfilePicture(
+  //   @GetAuthUser() user: User,
+  //   updateDto: UpdateUserDto,
+  //   file: Express.Multer.File,
+  // ) {
+  //   const { about, firstName, lastName, username } = updateDto;
+  //   const userToUpdate = await this.userService.getUserById(user.id);
+
+  //   if (userToUpdate.id !== user.id) {
+  //     throw new ForbiddenException('Unauthorized');
+  //   }
+
+  //   const uploadedAvatarUrl = await this.fileUploadService.uploadFile(file);
+
+  //   userToUpdate.avatar = uploadedAvatarUrl;
+  //   userToUpdate.about = about;
+  //   userToUpdate.firstName = firstName;
+  //   userToUpdate.lastName = lastName;
+  //   userToUpdate.username = username;
+
+  //   const updatedUser = await this.UserRepository.save(userToUpdate);
+
+  //   return { user: updatedUser };
+  // }
 }

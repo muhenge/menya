@@ -8,6 +8,7 @@ import { UserService } from '../user/user.service';
 import { UserModule } from '../user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
+import { FileUploaderService } from '../uploads/upload.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { User } from '../user/entities/user.entity';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UserService],
+  providers: [AuthService, JwtStrategy, UserService, FileUploaderService],
 })
 export class AuthModule {}
