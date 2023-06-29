@@ -50,6 +50,6 @@ export class UserController {
   @UseGuards(JwtGuard)
   async profile(@Param('slug') slug: string): Promise<{ user: User }> {
     const user = await this.userService.getUserBySlug(slug);
-    return { user: user };
+    return { user };
   }
 }

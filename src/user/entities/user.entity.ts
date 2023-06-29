@@ -74,4 +74,12 @@ export class User {
     eager: true,
   })
   posts: Posts[];
+
+  @Column({ nullable: true })
+  @IsOptional()
+  avatar: string;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  about: string;
 }

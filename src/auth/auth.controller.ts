@@ -3,12 +3,22 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Param,
   Post,
+  Put,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserDto } from '../user/dto/user.dto';
 import { signinDto } from 'src/user/dto/signIn-user.dto';
+import { JwtGuard } from './guards';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { GetAuthUser } from './decorators';
+import { User } from 'src/user/entities/user.entity';
+import { UpdateUserDto } from 'src/user/dto/updateUser.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -60,5 +70,17 @@ export class AuthController {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
+  }
+  @Put('upload')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateUserWithAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @GetAuthUser() user: User,
+  ) {
+    console.log(file)
+    const response = await this.authService.addPictureToUser(user, file);
+    console.log(response);
+    console.log(user);
   }
 }
