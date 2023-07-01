@@ -82,4 +82,6 @@ export class User {
   @Column({ nullable: true })
   @IsOptional()
   about: string;
+  @Column({ unique: true, nullable: true })
+  jti: string;
 }

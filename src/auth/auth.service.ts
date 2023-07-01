@@ -17,6 +17,7 @@ import { UserService } from 'src/user/user.service';
 import { UpdateUserDto } from '../user/dto/updateUser.dto';
 import { FileUploaderService } from '../uploads/upload.service';
 import { extname } from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -73,7 +74,9 @@ export class AuthService {
       email: user.email,
       username: user.username,
       sub: user.id,
+
     };
+
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
 
