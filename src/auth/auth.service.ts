@@ -74,7 +74,6 @@ export class AuthService {
       email: user.email,
       username: user.username,
       sub: user.id,
-
     };
 
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
