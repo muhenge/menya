@@ -24,6 +24,7 @@ export class UserService {
   async getUserByEmail(email): Promise<User | null> {
     const user = await this.usersRepository.findOne({
       where: { email: email },
+      select: ['id', 'email', 'firstName', 'lastName', 'about', 'jti'],
     });
     return user || null;
   }
@@ -31,7 +32,7 @@ export class UserService {
   async getUserById(id: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({
       where: { id: id },
-      select: ['id', 'username', 'email'],
+      select: ['id', 'username', 'email', 'jti'],
     });
     return user || null;
   }

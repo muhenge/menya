@@ -18,6 +18,7 @@ import { UpdateUserDto } from '../user/dto/updateUser.dto';
 import { FileUploaderService } from '../uploads/upload.service';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -27,12 +28,12 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly fileUploadService: FileUploaderService,
+    private mailService: MailService,
   ) {}
 
   async validateUser(payload: JwtPayload): Promise<User> {
     const user = await this.userService.getUserById(payload.id);
     if (!user) throw new Error(`User ${payload.email} not found`);
-
     return user;
   }
 
@@ -43,8 +44,10 @@ export class AuthService {
     if (existingUser) {
       throw new ForbiddenException('User already exists');
     }
-    const user = this.UserRepository.create(createUser);
+    const jti = uuidv4();
+    const user = this.UserRepository.create({ ...createUser, jti: jti });
     const createdUser = await this.UserRepository.save(user);
+    await this.mailService.sendEmail(user);
     return { user: createdUser };
   }
 
@@ -62,7 +65,7 @@ export class AuthService {
   async login(email: string, password: string): Promise<string> {
     const user = await this.UserRepository.findOne({
       where: { email: email },
-      select: ['id', 'email', 'username', 'password'],
+      select: ['id', 'email', 'username', 'password', 'jti'],
     });
 
     if (!user) throw new NotFoundException('User not found');
@@ -74,6 +77,7 @@ export class AuthService {
       email: user.email,
       username: user.username,
       sub: user.id,
+      jti: user.jti,
     };
 
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
@@ -89,5 +93,13 @@ export class AuthService {
     const uploadedFile = await this.fileUploadService.uploadFile(file);
     user.avatar = uploadedFile;
     await this.UserRepository.save(user);
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    const user = await this.UserRepository.findOne({
+      where: { id: id },
+      select: ['id', 'username', 'email', 'jti'],
+    });
+    return user || null;
   }
 }

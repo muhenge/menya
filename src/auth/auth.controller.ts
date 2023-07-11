@@ -33,6 +33,8 @@ export class AuthController {
         email,
         firstName,
         lastName,
+        about,
+        jti,
         created_at,
         updated_at,
       } = user;
@@ -42,6 +44,8 @@ export class AuthController {
         email,
         firstName,
         lastName,
+        about,
+        jti,
         created_at,
         updated_at,
       };
@@ -51,21 +55,25 @@ export class AuthController {
     }
   }
   @Post('login')
-  async signin(
-    @Body() credentials: signinDto,
-  ): Promise<{ message: string; data: { token: string } }> {
+  async signin(@Body() credentials: signinDto): Promise<{
+    message: string;
+    data: object;
+    accessToken: { token: string };
+  }> {
     try {
       const token = await this.authService.login(
         credentials.email,
         credentials.password,
       );
 
+      const user = await this.authService.getUserByEmail(credentials.email);
       if (!token) throw new Error('Invalid credentials ');
       return {
         message: 'Sign in successfully',
-        data: {
+        accessToken: {
           token,
         },
+        data: user,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);

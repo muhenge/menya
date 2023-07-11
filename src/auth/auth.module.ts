@@ -9,18 +9,31 @@ import { UserModule } from '../user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { FileUploaderService } from '../uploads/upload.service';
+import { MailModule } from '../mail/mail.module';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    PassportModule,
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      property: 'user',
+      session: false,
+    }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
     UserModule,
+    MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UserService, FileUploaderService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    UserService,
+    FileUploaderService,
+    MailService,
+  ],
 })
 export class AuthModule {}
