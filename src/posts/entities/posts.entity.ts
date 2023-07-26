@@ -32,4 +32,7 @@ export class Posts {
   })
   @JoinColumn()
   author: User;
+  @Column({ nullable: true })
+  @IsOptional()
+  picture: string;
 }

@@ -1,19 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { JwtGuard } from 'src/auth/guards';
-import { GetAuthUser } from 'src/auth/decorators';
+import { Request } from 'express';
 
 @Controller('users/')
 export class UserController {
@@ -30,6 +20,7 @@ export class UserController {
         firstName,
         lastName,
         slug,
+        avatar,
         created_at,
         updated_at,
       }) => ({
@@ -39,6 +30,7 @@ export class UserController {
         firstName,
         lastName,
         slug,
+        avatar,
         created_at,
         updated_at,
       }),
@@ -48,7 +40,11 @@ export class UserController {
 
   @Get('profile/:slug')
   @UseGuards(JwtGuard)
-  async profile(@Param('slug') slug: string): Promise<{ user: User }> {
+  async profile(
+    @Param('slug') slug: string,
+    @Req() req: Request,
+  ): Promise<{ user: User }> {
+    console.log(req.headers.authorization);
     const user = await this.userService.getUserBySlug(slug);
     return { user };
   }
