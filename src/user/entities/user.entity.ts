@@ -11,6 +11,7 @@ import {
 import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { genSalt, hash } from 'bcrypt';
 import { Posts } from '../../posts/entities/posts.entity';
+import { Exclude } from 'class-transformer';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -32,6 +33,7 @@ export class User {
   email: string;
   @Column({ select: false })
   @IsNotEmpty({ message: 'Password is required' })
+  @Exclude()
   password: string;
   @CreateDateColumn()
   created_at: Date;

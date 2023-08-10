@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Param, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
@@ -40,11 +40,8 @@ export class UserController {
 
   @Get('profile/:slug')
   @UseGuards(JwtGuard)
-  async profile(
-    @Param('slug') slug: string,
-    @Req() req: Request,
-  ): Promise<{ user: User }> {
-    console.log(req.headers.authorization);
+  @UseInterceptors(ClassSerializerInterceptor)
+  async profile(@Param('slug') slug: string): Promise<{ user: User }> {
     const user = await this.userService.getUserBySlug(slug);
     return { user };
   }

@@ -40,7 +40,15 @@ export class UserService {
   async getUserBySlug(slug: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { slug: slug },
-      select: ['id', 'username', 'email', 'slug', 'firstName', 'lastName'],
+      select: [
+        'id',
+        'avatar',
+        'username',
+        'email',
+        'slug',
+        'firstName',
+        'lastName',
+      ],
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -49,8 +57,10 @@ export class UserService {
   async getUserProfile(slug: string, id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { slug: slug, id: id },
-      select: ['id', 'slug'],
+      select: ['id', 'slug', 'firstName', 'lastName', 'avatar'],
     });
+
+    console.log(user)
 
     return user || null;
   }

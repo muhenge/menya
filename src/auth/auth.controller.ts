@@ -4,8 +4,11 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
+  Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,10 +21,16 @@ import { JwtGuard } from './guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetAuthUser } from './decorators';
 import { User } from 'src/user/entities/user.entity';
-import { UpdateUserDto } from 'src/user/dto/updateUser.dto';
+import { UpdateUserDto } from '../user/dto/updateUser.dto';
+import { Response } from 'express';
+import { UserService } from 'src/user/user.service';
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('signup')
   async signup(@Body() createUser: CreateUserDto): Promise<{ user: UserDto }> {
@@ -33,7 +42,6 @@ export class AuthController {
         email,
         firstName,
         lastName,
-        about,
         jti,
         created_at,
         updated_at,
@@ -44,7 +52,6 @@ export class AuthController {
         email,
         firstName,
         lastName,
-        about,
         jti,
         created_at,
         updated_at,
@@ -55,7 +62,10 @@ export class AuthController {
     }
   }
   @Post('login')
-  async signin(@Body() credentials: signinDto): Promise<{
+  async signin(
+    @Body() credentials: signinDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{
     message: string;
     data: object;
     accessToken: { token: string };
@@ -66,8 +76,9 @@ export class AuthController {
         credentials.password,
       );
 
-      const user = await this.authService.getUserByEmail(credentials.email);
+      const user = await this.userService.getUserByEmail(credentials.email);
       if (!token) throw new Error('Invalid credentials ');
+      response.cookie('jwt-token', token, { httpOnly: true });
       return {
         message: 'Sign in successfully',
         accessToken: {
@@ -87,6 +98,15 @@ export class AuthController {
     @GetAuthUser() user: User,
   ) {
     const response = await this.authService.addPictureToUser(user, file);
+
     return { response };
   }
+
+  // @Put('update')
+  // @UseGuards(JwtGuard)
+  // async update(@Body() user: UpdateUserDto) {
+  //   const response = await this.authService.updateUser(user);
+
+  //   return { response };
+  // }
 }

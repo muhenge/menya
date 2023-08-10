@@ -18,6 +18,7 @@ import { FileUploaderService } from '../uploads/upload.service';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
+import { UpdateUserDto } from 'src/user/dto/updateUser.dto';
 
 @Injectable()
 export class AuthService {
@@ -64,24 +65,27 @@ export class AuthService {
   async login(email: string, password: string): Promise<string> {
     const user = await this.UserRepository.findOne({
       where: { email: email },
-      select: ['id', 'email', 'username', 'password', 'jti'],
+      select: ['id', 'email', 'username', 'password', 'jti', 'slug'],
     });
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new BadRequestException('Email not found');
     const isMatch = await this.comparePasswords(password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Wrong password');
+    if (!isMatch) throw new BadRequestException('Wrong password');
 
     const payload: JwtPayload = {
       id: user.id,
       email: user.email,
-      username: user.username,
+      slug: user.slug,
       sub: user.id,
       jti: user.jti,
     };
+
+    console.log(payload);
+
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
 
-  async addPictureToUser(user: User, file: Express.Multer.File): Promise<void> {
+  async addPictureToUser(user: User, file: Express.Multer.File) {
     const allowedExtensions = ['.jpg', '.jpeg', '.png'];
     const fileExtension = extname(file.originalname).toLowerCase();
     if (!allowedExtensions.includes(fileExtension))
@@ -91,6 +95,7 @@ export class AuthService {
     const uploadedFile = await this.fileUploadService.uploadFile(file);
     user.avatar = uploadedFile;
     await this.UserRepository.save(user);
+    return { avatar: uploadedFile };
   }
 
   async getUserById(id: string): Promise<User | null> {
@@ -100,6 +105,14 @@ export class AuthService {
     });
     return user || null;
   }
+  // async updateUser(user: UpdateUserDto): Promise<{user: UpdateUserDto}> {
+  //   const { firstName, lastName, about } = user
+  //   user.about = about
+  //   user.firstName = firstName
+  //   user.lastName = lastName
+  //   const updatedUser = await this.UserRepository.save(user)
+  //   return { user: updatedUser}
+  // }
 
   // async updateUser(user: User): Promise<{data: User}> {
   //   const userId = await this.userService.getUserById(user.id);
