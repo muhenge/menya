@@ -102,11 +102,12 @@ export class AuthController {
     return { response };
   }
 
-  // @Put('update')
-  // @UseGuards(JwtGuard)
-  // async update(@Body() user: UpdateUserDto) {
-  //   const response = await this.authService.updateUser(user);
-
-  //   return { response };
-  // }
+  @Put('update')
+  @UseGuards(JwtGuard)
+  async update(
+    @GetAuthUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.authService.updateUser(user, updateUserDto);
+  }
 }

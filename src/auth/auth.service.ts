@@ -105,17 +105,14 @@ export class AuthService {
     });
     return user || null;
   }
-  // async updateUser(user: UpdateUserDto): Promise<{user: UpdateUserDto}> {
-  //   const { firstName, lastName, about } = user
-  //   user.about = about
-  //   user.firstName = firstName
-  //   user.lastName = lastName
-  //   const updatedUser = await this.UserRepository.save(user)
-  //   return { user: updatedUser}
-  // }
-
-  // async updateUser(user: User): Promise<{data: User}> {
-  //   const userId = await this.userService.getUserById(user.id);
-  //   if(!userId) throw new UnauthorizedException(
-  // }
+  async updateUser(
+    user: User,
+    updateUser: UpdateUserDto,
+  ): Promise<{ user: User }> {
+    user.firstName = updateUser.firstName;
+    user.lastName = updateUser.lastName;
+    user.about = updateUser.about;
+    await this.UserRepository.save(user);
+    return { user };
+  }
 }

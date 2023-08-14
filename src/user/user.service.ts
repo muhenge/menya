@@ -3,9 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
+  updateUser(user: User, updateUserDto: UpdateUserDto) {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -57,11 +61,8 @@ export class UserService {
   async getUserProfile(slug: string, id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { slug: slug, id: id },
-      select: ['id', 'slug', 'firstName', 'lastName', 'avatar'],
+      select: ['id', 'slug', 'firstName', 'lastName', 'avatar', 'about'],
     });
-
-    console.log(user)
-
     return user || null;
   }
 }
