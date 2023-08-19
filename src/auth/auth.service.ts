@@ -1,10 +1,12 @@
 import {
   All,
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
@@ -19,7 +21,6 @@ import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
 import { UpdateUserDto } from 'src/user/dto/updateUser.dto';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -33,7 +34,7 @@ export class AuthService {
 
   async validateUser(payload: JwtPayload): Promise<User> {
     const user = await this.userService.getUserById(payload.id);
-    if (!user) throw new Error(`User ${payload.email} not found`);
+    if (!user) throw new NotFoundException(`User ${payload.email} not found`);
     return user;
   }
 
@@ -42,8 +43,15 @@ export class AuthService {
       createUser.email,
     );
     if (existingUser) {
-      throw new ForbiddenException('User already exists');
+      throw new ConflictException('Email already in use');
     }
+    if (
+      (createUser.email === '' && createUser.password === '',
+      createUser.username === '')
+    )
+      throw new UnprocessableEntityException(
+        'Email, Password and Username are required',
+      );
     const jti = uuidv4();
     const user = this.UserRepository.create({ ...createUser, jti: jti });
     const createdUser = await this.UserRepository.save(user);
@@ -79,8 +87,6 @@ export class AuthService {
       sub: user.id,
       jti: user.jti,
     };
-
-    console.log(payload);
 
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
