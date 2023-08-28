@@ -1,8 +1,6 @@
 import {
-  All,
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -73,13 +71,25 @@ export class AuthService {
   async login(email: string, password: string): Promise<string> {
     const user = await this.UserRepository.findOne({
       where: { email: email },
-      select: ['id', 'email', 'username', 'password', 'jti', 'slug'],
+      select: [
+        'id',
+        'email',
+        'username',
+        'password',
+        'jti',
+        'slug',
+        'isConfirmed',
+      ],
     });
+
+    if (user.isConfirmed === false)
+      throw new UnauthorizedException(
+        'Please confirm your account, visit your email and click to confirm your account',
+      );
 
     if (!user) throw new BadRequestException('Email not found');
     const isMatch = await this.comparePasswords(password, user.password);
     if (!isMatch) throw new BadRequestException('Wrong password');
-
     const payload: JwtPayload = {
       id: user.id,
       email: user.email,

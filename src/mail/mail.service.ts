@@ -11,7 +11,14 @@ export class MailService {
   ) {}
 
   async sendEmail(user: User) {
-    const token = Math.random().toString(36).substring(7);
+    const payload = {
+      user: user.email,
+    };
+    const jwtSignOptions = {
+      secret: process.env.JWT_TOKEN,
+      expiresIn: '1h',
+    };
+    const token = this.jwtMailerService.sign(payload, jwtSignOptions);
     const url = `http://localhost:3333/api/auth/confirm?token=${token}`;
     await this.mailerService.sendMail({
       from: ``, // sender address

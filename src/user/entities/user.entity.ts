@@ -87,6 +87,6 @@ export class User {
   about: string;
   @Column({ unique: true, nullable: false })
   jti: string;
-  @Column({ nullable: false })
+  @Column('boolean', { nullable: false, default: 'false' })
   isConfirmed: boolean;
 }
