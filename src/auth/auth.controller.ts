@@ -69,6 +69,12 @@ export class AuthController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Get('confirm')
+  async getVerified(@Query('token') token: string) {
+    return await this.authService.getVerifiedEmail(token);
+  }
+
   @Post('login')
   async signin(
     @Body() credentials: signinDto,

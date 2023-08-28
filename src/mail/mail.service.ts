@@ -16,12 +16,12 @@ export class MailService {
     };
     const jwtSignOptions = {
       secret: process.env.JWT_TOKEN,
-      expiresIn: '1h',
+      expiresIn: '1 day',
     };
     const token = this.jwtMailerService.sign(payload, jwtSignOptions);
     const url = `http://localhost:3333/api/auth/confirm?token=${token}`;
     await this.mailerService.sendMail({
-      from: ``, // sender address
+      from: `No reply`,
       to: `${user.email}`,
       subject: 'Welcome ',
       text: `
@@ -32,7 +32,7 @@ export class MailService {
       html: `
       <p>Hello, ${user.firstName}</p><br>
       <p>Thank you for registering with us. Please confirm your account by clicking the link below.</p>
-      <a href="${url}">Click here to confirm your account</a>
+      <a href="${url}" target="_blank">Click here to confirm your account</a>
       `,
     });
   }

@@ -57,6 +57,25 @@ export class AuthService {
     return { user: createdUser };
   }
 
+  async getVerifiedEmail(token: string) {
+    try {
+      const decoded = this.jwtService.verify(token);
+      if (decoded.user) {
+        const user = await this.userService.getUserByEmail(decoded.user.email);
+        if (user) {
+          user.isConfirmed = true;
+          await this.UserRepository.save(user);
+          return 'Account verified successfully!';
+        }
+      }
+    } catch (error) {
+      if (error.message.includes('Expired')) {
+        throw new UnauthorizedException('Token has expired');
+      }
+      return 'Error: ' + error.message;
+    }
+  }
+
   async comparePasswords(
     password: string,
     hashedPassword: string,
