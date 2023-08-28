@@ -4,6 +4,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { config } from 'dotenv';
+import { JwtService } from '@nestjs/jwt';
 
 config();
 
@@ -24,7 +25,7 @@ config();
         from: '"No Reply" <noreply@example.com>',
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: join(__dirname, './templates'),
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
@@ -32,7 +33,7 @@ config();
       },
     }),
   ],
-  providers: [MailService],
+  providers: [MailService, JwtService],
   exports: [MailService],
 })
 export class MailModule {}

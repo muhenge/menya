@@ -54,8 +54,8 @@ export class AuthService {
       );
     const jti = uuidv4();
     const user = this.UserRepository.create({ ...createUser, jti: jti });
-    const createdUser = await this.UserRepository.save(user);
     await this.mailService.sendEmail(user);
+    const createdUser = await this.UserRepository.save(user);
     return { user: createdUser };
   }
 

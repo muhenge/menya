@@ -8,7 +8,7 @@ import {
   BeforeUpdate,
   OneToMany,
 } from 'typeorm';
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { genSalt, hash } from 'bcrypt';
 import { Posts } from '../../posts/entities/posts.entity';
 import { Exclude } from 'class-transformer';
@@ -24,7 +24,7 @@ export class User {
   @Column({ nullable: true })
   @IsOptional()
   lastName: string;
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true, nullable: false, type: 'varchar', length: 50 })
   @IsNotEmpty({ message: 'Username is required' })
   username: string;
   @Column({ unique: true, nullable: false })
@@ -34,11 +34,12 @@ export class User {
   @Column({ select: false })
   @IsNotEmpty({ message: 'Password is required' })
   @Exclude()
+  @MinLength(6)
   password: string;
-  @CreateDateColumn()
-  created_at: Date;
-  @UpdateDateColumn()
-  updated_at: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  readonly created_at?: Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  readonly updated_at?: Date;
   @BeforeInsert()
   @BeforeUpdate()
   emailToLowerCase() {
@@ -86,4 +87,6 @@ export class User {
   about: string;
   @Column({ unique: true, nullable: false })
   jti: string;
+  @Column({ nullable: false })
+  isConfirmed: boolean;
 }
