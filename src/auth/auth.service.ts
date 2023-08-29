@@ -141,13 +141,19 @@ export class AuthService {
     return user || null;
   }
   async updateUser(
-    user: User,
+    user_id: string,
     updateUser: UpdateUserDto,
   ): Promise<{ user: User }> {
-    user.firstName = updateUser.firstName;
-    user.lastName = updateUser.lastName;
-    user.about = updateUser.about;
-    await this.UserRepository.save(user);
-    return { user };
+    const found = await this.userService.getUserById(user_id);
+    Object.assign(found, updateUser);
+    const saved = await this.UserRepository.save(found);
+    return { user: saved };
+  }
+
+  async forgotPassword(user: User) {
+    const found = await this.userService.getUserByEmail(user.email);
+    console.log(found.email);
+    if (!found) throw new NotFoundException('Email not found');
+    await this.mailService.sendForgotPasswordConfirmation(found);
   }
 }

@@ -122,6 +122,15 @@ export class AuthController {
     @GetAuthUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return await this.authService.updateUser(user, updateUserDto);
+    return await this.authService.updateUser(user.id, updateUserDto);
+  }
+
+  @Put('forget')
+  @UseGuards(JwtGuard)
+  async forgetPassword(
+    @GetAuthUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.authService.forgotPassword(user);
   }
 }
