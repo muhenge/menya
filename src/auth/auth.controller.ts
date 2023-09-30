@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Render,
   Req,
   Res,
   UploadedFile,
@@ -132,5 +133,11 @@ export class AuthController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return await this.authService.forgotPassword(user);
+  }
+
+  @Get('index')
+  @Render('index')
+  root() {
+    return { message: 'Hello world!' };
   }
 }
