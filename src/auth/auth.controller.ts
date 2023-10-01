@@ -135,9 +135,16 @@ export class AuthController {
     return await this.authService.forgotPassword(user);
   }
 
-  @Get('index')
-  @Render('index')
-  root() {
-    return { message: 'Hello world!' };
+  @Get('confirmation')
+  @Render('confirmation')
+  confirm() {
+    return { message:"ok"   }
   }
+
+
+  // @Get('index')
+  // @Render('index')
+  // root() {
+  //   return { message: 'Hello world!' };
+  // }
 }
