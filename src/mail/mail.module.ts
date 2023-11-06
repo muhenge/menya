@@ -13,7 +13,6 @@ config();
     MailerModule.forRoot({
       transport: {
         host: 'smtp.gmail.com',
-        //port: 465,
         secure: false,
         service: 'gmail',
         auth: {

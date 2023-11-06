@@ -11,6 +11,7 @@ export class MailService {
   ) {}
 
   async sendEmail(user: User) {
+    
     const payload = {
       user: user.email,
     };
