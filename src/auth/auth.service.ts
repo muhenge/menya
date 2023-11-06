@@ -1,10 +1,10 @@
 import {
-  All,
   BadRequestException,
-  ForbiddenException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
@@ -19,7 +19,6 @@ import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
 import { UpdateUserDto } from 'src/user/dto/updateUser.dto';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -33,7 +32,7 @@ export class AuthService {
 
   async validateUser(payload: JwtPayload): Promise<User> {
     const user = await this.userService.getUserById(payload.id);
-    if (!user) throw new Error(`User ${payload.email} not found`);
+    if (!user) throw new NotFoundException(`User ${payload.email} not found`);
     return user;
   }
 
@@ -42,13 +41,39 @@ export class AuthService {
       createUser.email,
     );
     if (existingUser) {
-      throw new ForbiddenException('User already exists');
+      throw new ConflictException('Email already in use');
     }
+    if (
+      (createUser.email === '' && createUser.password === '',
+      createUser.username === '')
+    )
+      throw new UnprocessableEntityException(
+        'Email, Password and Username are required',
+      );
     const jti = uuidv4();
     const user = this.UserRepository.create({ ...createUser, jti: jti });
-    const createdUser = await this.UserRepository.save(user);
     await this.mailService.sendEmail(user);
+    const createdUser = await this.UserRepository.save(user);
     return { user: createdUser };
+  }
+
+  async getVerifiedEmail(token: string) {
+    try {
+      const decoded = this.jwtService.verify(token);
+      if (decoded.user) {
+        const user = await this.userService.getUserByEmail(decoded.user.email);
+        if (user) {
+          user.isConfirmed = true;
+          await this.UserRepository.save(user);
+          return 'Account verified successfully!';
+        }
+      }
+    } catch (error) {
+      if (error.message.includes('Expired')) {
+        throw new UnauthorizedException('Token has expired');
+      }
+      return 'Error: ' + error.message;
+    }
   }
 
   async comparePasswords(
@@ -65,13 +90,25 @@ export class AuthService {
   async login(email: string, password: string): Promise<string> {
     const user = await this.UserRepository.findOne({
       where: { email: email },
-      select: ['id', 'email', 'username', 'password', 'jti', 'slug'],
+      select: [
+        'id',
+        'email',
+        'username',
+        'password',
+        'jti',
+        'slug',
+        'isConfirmed',
+      ],
     });
+
+    if (user.isConfirmed === false)
+      throw new UnauthorizedException(
+        'Please confirm your account, visit your email and click to confirm your account',
+      );
 
     if (!user) throw new BadRequestException('Email not found');
     const isMatch = await this.comparePasswords(password, user.password);
     if (!isMatch) throw new BadRequestException('Wrong password');
-
     const payload: JwtPayload = {
       id: user.id,
       email: user.email,
@@ -79,8 +116,6 @@ export class AuthService {
       sub: user.id,
       jti: user.jti,
     };
-
-    console.log(payload);
 
     return await this.jwtService.signAsync(payload, { expiresIn: '1 day' });
   }
@@ -106,13 +141,19 @@ export class AuthService {
     return user || null;
   }
   async updateUser(
-    user: User,
+    user_id: string,
     updateUser: UpdateUserDto,
   ): Promise<{ user: User }> {
-    user.firstName = updateUser.firstName;
-    user.lastName = updateUser.lastName;
-    user.about = updateUser.about;
-    await this.UserRepository.save(user);
-    return { user };
+    const found = await this.userService.getUserById(user_id);
+    Object.assign(found, updateUser);
+    const saved = await this.UserRepository.save(found);
+    return { user: saved };
+  }
+
+  async forgotPassword(user: User) {
+    const found = await this.userService.getUserByEmail(user.email);
+    console.log(found.email);
+    if (!found) throw new NotFoundException('Email not found');
+    await this.mailService.sendForgotPasswordConfirmation(found);
   }
 }

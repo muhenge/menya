@@ -18,7 +18,8 @@ import { MailService } from '../mail/mail.service';
     PassportModule.register({
       defaultStrategy: 'jwt',
       property: 'user',
-      session: false,
+      session: true,
+      signOptions: { expiresIn: '2d' },
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,

@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
   Patch,
   Post,
   Put,
+  Query,
+  Render,
   Req,
   Res,
   UploadedFile,
@@ -33,7 +36,9 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  async signup(@Body() createUser: CreateUserDto): Promise<{ user: UserDto }> {
+  async signup(
+    @Body() createUser: CreateUserDto,
+  ): Promise<{ message: string; user: UserDto }> {
     try {
       const { user } = await this.authService.register(createUser);
       const {
@@ -56,11 +61,21 @@ export class AuthController {
         created_at,
         updated_at,
       };
-      return { user: userDto };
+      return {
+        message:
+          'Account created! Please check your email inbox for an activation link. Click on it to verify your email.',
+        user: userDto,
+      };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Get('confirm')
+  async getVerified(@Query('token') token: string) {
+    return await this.authService.getVerifiedEmail(token);
+  }
+
   @Post('login')
   async signin(
     @Body() credentials: signinDto,
@@ -78,7 +93,7 @@ export class AuthController {
 
       const user = await this.userService.getUserByEmail(credentials.email);
       if (!token) throw new Error('Invalid credentials ');
-      response.cookie('jwt-token', token, { httpOnly: true });
+      response.cookie('token', token, { httpOnly: true });
       return {
         message: 'Sign in successfully',
         accessToken: {
@@ -108,6 +123,28 @@ export class AuthController {
     @GetAuthUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return await this.authService.updateUser(user, updateUserDto);
+    return await this.authService.updateUser(user.id, updateUserDto);
   }
+
+  @Put('forget')
+  @UseGuards(JwtGuard)
+  async forgetPassword(
+    @GetAuthUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.authService.forgotPassword(user);
+  }
+
+  @Get('confirmation')
+  @Render('confirmation')
+  confirm() {
+    return { message:"ok"   }
+  }
+
+
+  // @Get('index')
+  // @Render('index')
+  // root() {
+  //   return { message: 'Hello world!' };
+  // }
 }
