@@ -11,9 +11,9 @@ export class MailService {
   ) {}
 
   async sendEmail(user: User) {
-    
     const payload = {
       user: user.email,
+      username: user.username,
     };
     const jwtSignOptions = {
       secret: process.env.JWT_TOKEN,
@@ -24,17 +24,12 @@ export class MailService {
     await this.mailerService.sendMail({
       from: `No reply`,
       to: `${user.email}`,
-      subject: 'CONFIRM',
-      text: `
-        Hello ${user.username},
-        Thank you for registering with us. Please confirm your account by clicking the link below
-        ${url}
-      `,
-      html: `
-      <p>Hello, ${user.firstName}</p><br>
-      <p>Thank you for registering with us. Please confirm your account by clicking the link below.</p>
-      <a href="${url}" target="_blank">Click here to confirm your account</a>
-      `,
+      subject: 'Confirm you email',
+      template: 'confirmation',
+      context: {
+        url,
+        username: payload.username,
+      },
     });
   }
   async sendForgotPasswordConfirmation(user: User): Promise<void> {

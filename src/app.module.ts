@@ -1,4 +1,3 @@
-import dbConfig from './ormconfig';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,21 +7,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { MailModule } from './mail/mail.module';
+import { AppDataSource } from './ormconfig';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
-      migrations: ['src/migration/*{.ts,.js}'],
-      logging: true,
-    }),
+    TypeOrmModule.forRoot(AppDataSource.options),
     UserModule,
     AuthModule,
     PostsModule,

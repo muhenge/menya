@@ -31,6 +31,12 @@ export class User {
   @IsEmail({}, { message: 'Email is invalid' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
+  @Column({ length: 130 })
+  @IsOptional()
+  bio: string;
+  @Column()
+  @IsOptional()
+  telephone: string;
   @Column({ select: false })
   @IsNotEmpty({ message: 'Password is required' })
   @Exclude()
